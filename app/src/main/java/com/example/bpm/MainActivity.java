@@ -23,7 +23,10 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.view.View;
@@ -46,6 +49,13 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothGatt mGatt;
     private Button button;
 
+    private final int lowerBound = 120;
+    private final int upperBound = 150;
+    // private int newHeartRate;
+    private int currHeartRate = 50;
+    private float direction = 0;
+    private ToneGenerator toneG = new ToneGenerator(AudioManager.STREAM_MUSIC, 100);
+
     private final UUID heartRateServiceUuid = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb");
     private final UUID heartRateCharUuid = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb");
 
@@ -53,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
     private final ParcelUuid parcelUuid = new ParcelUuid(heartRateServiceUuid);
     // devices UUID service mask
     private final ParcelUuid parcelUuidMask = new ParcelUuid(UUID.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"));
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,8 +155,8 @@ public class MainActivity extends AppCompatActivity {
 
         isScanning = true;
         button.setText("Stop Scan");
-
     }
+
 
     private void stopBleScan() {
         Log.i("stopBleScan", "invoked");
@@ -296,9 +308,20 @@ public class MainActivity extends AppCompatActivity {
             return heartRate;
         }
 
+        private void toBeepOrNotToBeep(int newHeartRate) {
+            // newHeartRate = (int) extractHeartRate(characteristic);
+            direction = currHeartRate - newHeartRate;
+            currHeartRate = newHeartRate;
+            if (currHeartRate < lowerBound & direction < 0) {
+                toneG.startTone(ToneGenerator.TONE_PROP_BEEP,500);
+            } else if (currHeartRate > upperBound & direction > 0) {
+                toneG.startTone(ToneGenerator.TONE_PROP_BEEP2, 500);
+            }
+        }
+
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            int currHeartRate = (int) extractHeartRate(characteristic);
+            toBeepOrNotToBeep((int) extractHeartRate(characteristic));
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
