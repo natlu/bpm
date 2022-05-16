@@ -49,8 +49,8 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothGatt mGatt;
     private Button button;
 
-    private final int lowerBound = 120;
-    private final int upperBound = 150;
+    private final int lowerBound = 70;
+    private final int upperBound = 80;
     // private int newHeartRate;
     private int currHeartRate = 50;
     private float direction = 0;
@@ -310,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
 
         private void toBeepOrNotToBeep(int newHeartRate) {
             // newHeartRate = (int) extractHeartRate(characteristic);
-            direction = currHeartRate - newHeartRate;
+            direction = newHeartRate - currHeartRate ;
             currHeartRate = newHeartRate;
             if (currHeartRate < lowerBound & direction < 0) {
                 toneG.startTone(ToneGenerator.TONE_PROP_BEEP,500);
